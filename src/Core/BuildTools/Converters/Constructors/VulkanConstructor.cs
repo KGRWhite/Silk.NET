@@ -26,20 +26,65 @@ namespace Silk.NET.BuildTools.Converters.Constructors
         /// <param name="enums">The enums to write.</param>
         public void WriteEnums(Profile profile, IEnumerable<Enum> enums, ProfileConverterOptions opts)
         {
-            if (!profile.Projects.ContainsKey("Core"))
+            var mergedEnums = new Dictionary<string, Enum>();
+            var gl = profile.ClassName.ToUpper().CheckMemberName(opts.Prefix);
+            mergedEnums.Add
+            (
+                $"{gl}Enum",
+                new Enum
+                {
+                    Name = $"{gl}Enum", ExtensionName = "Core", Attributes = new List<Attribute>(),
+                    Tokens = new List<Token>(), NativeName = "GLenum",
+                }
+            );
+            
+            // first, we need to categorise the enums into "Core", or their vendor (i.e. "NV", "SGI", "KHR" etc)
+            foreach (var @enum in enums)
             {
-                profile.Projects.Add
-                (
-                    "Core",
-                    new Project
+                if (@enum.ProfileName != profile.Name || @enum.ProfileVersion?.ToString(2) != profile.Version)
+                {
+                    continue;
+                }
+                
+                if (@enum.ExtensionName == "Core")
+                {
+                    mergedEnums[$"{gl}Enum"].Tokens.AddRange(@enum.Tokens);
+                }
+                else
+                {
+                    var prefix = FormatCategory(@enum.ExtensionName);
+                    if (!mergedEnums.ContainsKey(prefix))
                     {
-                        CategoryName = "Core", ExtensionName = "Core", IsRoot = false,
-                        Namespace = string.Empty
+                        mergedEnums.Add
+                        (
+                            prefix,
+                            new Enum{Name = prefix.CheckMemberName(opts.Prefix), ExtensionName = prefix}
+                        );
                     }
-                );
+                    mergedEnums[prefix].Tokens.AddRange(@enum.Tokens);
+                }
             }
+            
+            // now that we've categorised them, lets add them into their appropriate projects.
+            foreach (var (_, @enum) in mergedEnums)
+            {
+                if (!profile.Projects.ContainsKey(@enum.ExtensionName))
+                {
+                    profile.Projects.Add
+                    (
+                        @enum.ExtensionName,
+                        new Project
+                        {
+                            CategoryName = @enum.ExtensionName, ExtensionName = @enum.ExtensionName, IsRoot = false,
+                            Namespace = @enum.ExtensionName == "Core"
+                                ? string.Empty
+                                : $".{@enum.ExtensionName.CheckMemberName(opts.Prefix)}"
+                        }
+                    );
+                }
 
-            profile.Projects["Core"].Enums.AddRange(enums);
+                profile.Projects[@enum.ExtensionName].Enums.Add(@enum);
+            }
         }
 
         /// <summary>
@@ -55,7 +100,7 @@ namespace Silk.NET.BuildTools.Converters.Constructors
                 {
                     continue;
                 }
-
+                
                 foreach (var rawCategory in function.Categories)
                 {
                     var category = FormatCategory(rawCategory);
@@ -123,12 +168,12 @@ namespace Silk.NET.BuildTools.Converters.Constructors
 
             return name.StartsWith(opts.Prefix) ? name.Remove(0, opts.Prefix.Length) : name;
         }
-
+        
         private static string FormatCategory(string rawCategory)
         {
             return rawCategory.Split('_').FirstOrDefault();
         }
-
+        
         private static string FormatToken(string token)
         {
             if (token == null)
@@ -159,46 +204,7 @@ namespace Silk.NET.BuildTools.Converters.Constructors
 
         public void WriteStructs(Profile profile, IEnumerable<Struct> structs, ProfileConverterOptions opts)
         {
-            foreach (var @struct in structs)
-            {
-                if (@struct.ProfileName != profile.Name || @struct.ProfileVersion?.ToString(2) != profile.Version)
-                {
-                    continue;
-                }
-
-                var category = FormatCategory(@struct.ExtensionName);
-                
-                // check that the root project exists
-                if (!profile.Projects.ContainsKey("Core"))
-                {
-                    profile.Projects.Add
-                    (
-                        "Core",
-                        new Project
-                        {
-                            CategoryName = "Core", ExtensionName = "Core", IsRoot = true,
-                            Namespace = string.Empty
-                        }
-                    );
-                }
-
-                // check that the extension project exists, if applicable
-                if (@struct.ExtensionName != "Core" && !profile.Projects.ContainsKey(category))
-                {
-                    profile.Projects.Add
-                    (
-                        category,
-                        new Project
-                        {
-                            CategoryName = category, ExtensionName = category, IsRoot = false,
-                            Namespace = $".{category.CheckMemberName(opts.Prefix)}"
-                        }
-                    );
-                }
-
-                // add the function to the interface
-                profile.Projects[@struct.ExtensionName == "Core" ? "Core" : category].Structs.Add(@struct);
-            }
+            // do nothing
         }
     }
 }

@@ -33323,8 +33323,7 @@
           "Attributes": []
         }
       },
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "AMD": {
       "ExtensionName": "AMD",
@@ -34292,8 +34291,7 @@
           "Attributes": []
         }
       },
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "ANDROID": {
       "ExtensionName": "ANDROID",
@@ -34310,8 +34308,7 @@
         }
       ],
       "Interfaces": {},
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "ANGLE": {
       "ExtensionName": "ANGLE",
@@ -35098,8 +35095,7 @@
           "Attributes": []
         }
       },
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "APPLE": {
       "ExtensionName": "APPLE",
@@ -36031,8 +36027,7 @@
           "Attributes": []
         }
       },
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "ARM": {
       "ExtensionName": "ARM",
@@ -36078,8 +36073,7 @@
         }
       ],
       "Interfaces": {},
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "DMP": {
       "ExtensionName": "DMP",
@@ -36125,8 +36119,7 @@
         }
       ],
       "Interfaces": {},
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "EXT": {
       "ExtensionName": "EXT",
@@ -53847,8 +53840,7 @@
           "Attributes": []
         }
       },
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "FJ": {
       "ExtensionName": "FJ",
@@ -53873,8 +53865,7 @@
         }
       ],
       "Interfaces": {},
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "IMG": {
       "ExtensionName": "IMG",
@@ -54868,8 +54859,7 @@
           "Attributes": []
         }
       },
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "INTEL": {
       "ExtensionName": "INTEL",
@@ -55761,8 +55751,7 @@
           "Attributes": []
         }
       },
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "KHR": {
       "ExtensionName": "KHR",
@@ -57880,8 +57869,7 @@
           "Attributes": []
         }
       },
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "MESA": {
       "ExtensionName": "MESA",
@@ -57906,8 +57894,7 @@
         }
       ],
       "Interfaces": {},
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "NV": {
       "ExtensionName": "NV",
@@ -74255,8 +74242,7 @@
           "Attributes": []
         }
       },
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "OES": {
       "ExtensionName": "OES",
@@ -81194,8 +81180,7 @@
           "Attributes": []
         }
       },
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "OVR": {
       "ExtensionName": "OVR",
@@ -81489,8 +81474,7 @@
           "Attributes": []
         }
       },
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "QCOM": {
       "ExtensionName": "QCOM",
@@ -83731,8 +83715,7 @@
           "Attributes": []
         }
       },
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     },
     "VIV": {
       "ExtensionName": "VIV",
@@ -83757,8 +83740,7 @@
         }
       ],
       "Interfaces": {},
-      "Structs": [],
-      "Delegates": []
+      "Structs": []
     }
   },
   "Namespace": "Silk.NET.OpenGLES",
