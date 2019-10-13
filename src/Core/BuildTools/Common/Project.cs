@@ -5,7 +5,6 @@
 
 using System.Collections.Generic;
 using Silk.NET.BuildTools.Common.Enums;
-using Silk.NET.BuildTools.Common.Functions;
 
 namespace Silk.NET.BuildTools.Common
 {
@@ -49,11 +48,6 @@ namespace Silk.NET.BuildTools.Common
         /// Gets or sets this project's list of structs.
         /// </summary>
         public List<Struct> Structs { get; set; } = new List<Struct>();
-        
-        /// <summary>
-        /// Gets or sets this project's list of delegate functions.
-        /// </summary>
-        public List<Function> Delegates { get; set; } = new List<Function>();
 
         /// <summary>
         /// Gets the full project name of this project, given the profile's root namespace.
