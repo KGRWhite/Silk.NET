@@ -33,9 +33,9 @@ namespace Silk.NET.BuildTools.Bind.Overloading
             },
         };
 
-        public static IEnumerable<ImplementedFunction> GetOverloads(Project project)
+        public static IEnumerable<Overload> GetOverloads(Project project)
         {
-            var ret = new List<ImplementedFunction>();
+            var ret = new List<Overload>();
             foreach (var @interface in project.Interfaces.Values)
             {
                 ret.AddRange(GetOverloads(@interface).Where(x => !ret.Any(y => y.Signature.Equals(x.Signature))));
@@ -44,9 +44,9 @@ namespace Silk.NET.BuildTools.Bind.Overloading
             return ret;
         }
 
-        public static IEnumerable<ImplementedFunction> GetOverloads(Interface @interface)
+        public static IEnumerable<Overload> GetOverloads(Interface @interface)
         {
-            var ret = new List<ImplementedFunction>();
+            var ret = new List<Overload>();
             foreach (var function in @interface.Functions)
             {
                 foreach (var overload in GetOverloads(function))
@@ -64,10 +64,10 @@ namespace Silk.NET.BuildTools.Bind.Overloading
             return ret;
         }
 
-        private static IEnumerable<ImplementedFunction> GetOverloads(Function function)
+        private static IEnumerable<Overload> GetOverloads(Function function)
         {
-            var ret = new List<ImplementedFunction>();
-            var add = new List<ImplementedFunction>();
+            var ret = new List<Overload>();
+            var add = new List<Overload>();
             foreach (var stage in Pipeline)
             {
                 foreach (var overloader in stage)
@@ -89,7 +89,7 @@ namespace Silk.NET.BuildTools.Bind.Overloading
             return ret;
         }
 
-        private static IEnumerable<ImplementedFunction> GetOverloads(Function function, IEnumerable<IFunctionOverloader> stage)
+        private static IEnumerable<Overload> GetOverloads(Function function, IEnumerable<IFunctionOverloader> stage)
         {
             return stage.SelectMany(overloader => overloader.CreateOverloads(function));
         }

@@ -5,7 +5,6 @@
 
 using System.Collections.Generic;
 using System.Text;
-using Silk.NET.BuildTools.Common;
 using Silk.NET.BuildTools.Common.Builders;
 using Silk.NET.BuildTools.Common.Functions;
 
@@ -13,7 +12,7 @@ namespace Silk.NET.BuildTools.Bind.Overloading
 {
     public class IntPtrOverloader : IFunctionOverloader
     {
-        public IEnumerable<ImplementedFunction> CreateOverloads(Function function)
+        public IEnumerable<Overload> CreateOverloads(Function function)
         {
             var @params = new List<Parameter>(function.Parameters);
             var sb = new StringBuilder();
@@ -60,7 +59,7 @@ namespace Silk.NET.BuildTools.Bind.Overloading
 
             if (ret)
             {
-                yield return new ImplementedFunction(new FunctionSignatureBuilder(function).WithParameters(@params).Build(), sb);
+                yield return new Overload(new FunctionSignatureBuilder(function).WithParameters(@params).Build(), sb);
             }
         }
     }

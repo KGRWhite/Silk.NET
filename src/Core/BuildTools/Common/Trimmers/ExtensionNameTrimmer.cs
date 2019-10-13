@@ -4,8 +4,6 @@
 // of the MIT license. See the LICENSE file for details.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Silk.NET.BuildTools.Common.Functions;
 
@@ -16,91 +14,6 @@ namespace Silk.NET.BuildTools.Common.Trimmers
     /// </summary>
     public class ExtensionNameTrimmer : ITrimmer<Function>, ITrimmer<string>
     {
-        public static readonly string[] Vendors = new[]
-        {
-            "IMG",
-            "AMD",
-            "AMDX",
-            "ARM",
-            "FSL",
-            "BRCM",
-            "NXP",
-            "NV",
-            "NVX",
-            "VIV",
-            "VSI",
-            "KDAB",
-            "ANDROID",
-            "CHROMIUM",
-            "GOOGLE",
-            "QCOM",
-            "LUNARG",
-            "SAMSUNG",
-            "SEC",
-            "TIZEN",
-            "RENDERDOC",
-            "NN",
-            "MVK",
-            "KHR",
-            "KHX",
-            "EXT",
-            "MESA",
-            "KAZAN",
-            "AMD",
-            "APPLE",
-            "ARB",
-            "EXT",
-            "INTEL",
-            "KHR",
-            "NV",
-            "OVR",
-            "AMD",
-            "APPLE",
-            "ARB",
-            "ATI",
-            "EXT",
-            "GL3DFX",
-            "GREMEDY",
-            "HP",
-            "IBM",
-            "INGR",
-            "INTEL",
-            "KHR",
-            "MESA",
-            "MESAX",
-            "NV",
-            "NVX",
-            "OES",
-            "OML",
-            "OVR",
-            "PGI",
-            "REND",
-            "S3",
-            "SGI",
-            "SGIS",
-            "SGIX",
-            "SUN",
-            "SUNX",
-            "WIN",
-            "AMD",
-            "ANDROID",
-            "ANGLE",
-            "APPLE",
-            "ARM",
-            "DMP",
-            "EXT",
-            "FJ",
-            "IMG",
-            "INTEL",
-            "KHR",
-            "MESA",
-            "NV",
-            "NVX",
-            "OES",
-            "OVR",
-            "QCOM",
-            "VIV",
-        };
         /// <inheritdoc />
         public bool IsRelevant(Function trimmable)
         {
@@ -124,7 +37,19 @@ namespace Silk.NET.BuildTools.Common.Trimmers
         /// <inheritdoc />
         public bool IsRelevant(string trimmable)
         {
-            if (Vendors.Any(trimmable.EndsWith))
+            var uppercaseCount = 0;
+            for (var i = trimmable.Length - 1; i >= 0; --i)
+            {
+                if (char.IsUpper(trimmable, i))
+                {
+                    uppercaseCount++;
+                    continue;
+                }
+
+                break;
+            }
+
+            if (uppercaseCount > 1)
             {
                 return true;
             }
@@ -135,15 +60,21 @@ namespace Silk.NET.BuildTools.Common.Trimmers
         /// <inheritdoc />
         public string Trim(string trimmable, string prefix)
         {
-            foreach (var vendor in Vendors)
+            var sb = new StringBuilder();
+
+            var isTrimming = true;
+            for (var i = trimmable.Length - 1; i >= 0; --i)
             {
-                if (trimmable.EndsWith(vendor))
+                if (isTrimming && char.IsUpper(trimmable, i))
                 {
-                    return trimmable.Remove(trimmable.Length - vendor.Length);
+                    continue;
                 }
+
+                isTrimming = false;
+                sb.Insert(0, trimmable[i]);
             }
 
-            return trimmable;
+            return sb.ToString();
         }
     }
 }

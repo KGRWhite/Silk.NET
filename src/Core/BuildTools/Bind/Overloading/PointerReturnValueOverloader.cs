@@ -15,7 +15,7 @@ namespace Silk.NET.BuildTools.Bind.Overloading
     public class PointerReturnValueOverloader : IFunctionOverloader
     {
         /// <inheritdoc/>
-        public IEnumerable<ImplementedFunction> CreateOverloads(Function function)
+        public IEnumerable<Overload> CreateOverloads(Function function)
         {
             if (!function.ReturnType.IsIntPtr())
             {
@@ -35,7 +35,7 @@ namespace Silk.NET.BuildTools.Bind.Overloading
                 function);
         }
 
-        private static ImplementedFunction Cast(
+        private static Overload Cast(
             Function function,
             Function oldFunction)
         {
@@ -44,7 +44,7 @@ namespace Silk.NET.BuildTools.Bind.Overloading
             sb.Append($"return (void*) {oldFunction.Name}(");
             sb.Append(string.Join(", ", function.Parameters.Select(x => GetPrefix(x.Type) + ConvertName(x.Name))));
             sb.AppendLine(");");
-            return new ImplementedFunction(function, sb, true);
+            return new Overload(function, sb, true);
         }
 
         private static string GetPrefix(Type type)

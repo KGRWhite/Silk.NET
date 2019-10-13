@@ -15,7 +15,7 @@ namespace Silk.NET.BuildTools.Bind.Overloading
 {
     public class FlowPointerOverloader : IFunctionOverloader
     {
-        public IEnumerable<ImplementedFunction> CreateOverloads(Function function)
+        public IEnumerable<Overload> CreateOverloads(Function function)
         {
             if (!function.Parameters.Any(x => x.Type.IsPointer && !x.Type.IsVoidPointer()))
             {
@@ -81,7 +81,7 @@ namespace Silk.NET.BuildTools.Bind.Overloading
                 sb.AppendLine(ind + "}");
             }
             
-            yield return new ImplementedFunction(sig.WithParameters(newParameters).Build(), sb, true);
+            yield return new Overload(sig.WithParameters(newParameters).Build(), sb, true);
         }
     }
 }

@@ -4,7 +4,6 @@
 // of the MIT license. See the LICENSE file for details.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -78,19 +77,6 @@ namespace Silk.NET.BuildTools.Common
                 builder.Remove(match.Index, match.Length);
                 builder.Insert(match.Index, match.Value.Transform(To.LowerCase, To.TitleCase));
             }
-
-            if (char.IsDigit(builder[0]))
-            {
-                builder.Insert(0, "C");
-            }
-
-            var newName = builder.ToString().Pascalize();
-            return newName.CheckMemberName(prefix);
-        }
-
-        public static string TranslateLite([NotNull] string name, string prefix)
-        {
-            var builder = new StringBuilder(name);
 
             if (char.IsDigit(builder[0]))
             {
