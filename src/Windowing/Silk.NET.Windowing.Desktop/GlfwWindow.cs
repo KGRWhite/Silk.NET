@@ -28,6 +28,7 @@ namespace Silk.NET.Windowing.Desktop
         private Point _position;
         private Size _size;
         private string _title;
+        private bool _cursorVisible;
         private VSyncMode _vSync;
         private WindowBorder _windowBorder;
         private WindowState _windowState;

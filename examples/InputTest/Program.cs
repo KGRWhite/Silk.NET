@@ -194,12 +194,12 @@ namespace InputTest
             Console.WriteLine($"M{arg1.Index}> {arg2} up.");
         }
 
-        private static void KeyboardOnKeyUp(IKeyboard arg1, Key arg2)
+        private static void KeyboardOnKeyUp(IKeyboard arg1, Key arg2, int scanCode, int mods)
         {
             Console.WriteLine($"K{arg1.Index}> {arg2} up.");
         }
 
-        private static void KeyboardOnKeyDown(IKeyboard arg1, Key arg2)
+        private static void KeyboardOnKeyDown(IKeyboard arg1, Key arg2, int scanCode, int mods)
         {
             Console.WriteLine($"K{arg1.Index}> {arg2} down.");
         }
