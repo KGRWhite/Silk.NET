@@ -119,13 +119,13 @@ namespace Silk.NET.BuildTools.Common
                         {
                             if (parameter.Type.OriginalName == "GLenum")
                             {
-                                parameter.Type.Name = project.Enums.First(x => x.NativeName == "GLenum").Name;
+                                parameter.Type.Name = project.Enums.First().Name;
                             }
                         }
 
                         if (function.ReturnType.OriginalName == "GLenum")
                         {
-                            function.ReturnType.Name = project.Enums.First(x => x.NativeName == "GLenum").Name;
+                            function.ReturnType.Name = project.Enums.First().Name;
                         }
                     }
                 }
