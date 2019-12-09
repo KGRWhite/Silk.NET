@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Newtonsoft.Json;
 
@@ -41,11 +42,23 @@ namespace Silk.NET.BuildTools.Common.Functions
         /// Gets or sets the name of this type.
         /// </summary>
         public string Name { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the group of this type.
+        /// </summary>
+        public string Group { get; set; }
 
         /// <summary>
         /// Gets or sets the original name of this type, before mapping.
         /// </summary>
         public string OriginalName { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the original group of this type.
+        /// Not included in JSON, as it is only used by the OpenGL Constructor.
+        /// </summary>
+        [JsonIgnore]
+        public string OriginalGroup { get; set; }
 
         /// <summary>
         /// Gets or sets the generic types arguments for this type.
@@ -70,7 +83,10 @@ namespace Silk.NET.BuildTools.Common.Functions
         /// <inheritdoc />
         public override string ToString()
         {
-            return Name +
+            return (IsIn ? "in " : string.Empty) +
+                   (IsOut ? "out " : string.Empty) +
+                   (IsByRef ? "ref " : string.Empty) +
+                   Name +
                    (IsPointer ? new string('*', IndirectionLevels) : string.Empty) +
                    (IsArray ? Utilities.GetArrayDimensionString(ArrayDimensions) : string.Empty) +
                    (GenericTypes.Any() ? $"<{string.Join(", ", GenericTypes.Select(x => x.Name))}>" : string.Empty);
@@ -96,7 +112,7 @@ namespace Silk.NET.BuildTools.Common.Functions
         /// <returns>A value indicating whether this signature represents an IntPtr.</returns>
         public bool IsIntPtr()
         {
-            return Name == "IntPtr" && IndirectionLevels == 0;
+            return ToString() == "IntPtr" && !IsIn && !IsByRef && !IsOut;
         }
 
         /// <summary>
@@ -105,7 +121,7 @@ namespace Silk.NET.BuildTools.Common.Functions
         /// <returns>A value indicating whether this signature represents a UIntPtr.</returns>
         public bool IsUIntPtr()
         {
-            return Name == "UIntPtr" && IndirectionLevels == 0;
+            return ToString() == "UIntPtr" && !IsIn && !IsByRef && !IsOut;
         }
 
         public bool Equals(Type other)

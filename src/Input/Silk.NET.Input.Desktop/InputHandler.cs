@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Silk.NET.GLFW;
 using Silk.NET.Input.Common;
@@ -17,11 +18,11 @@ namespace Silk.NET.Input.Desktop
     internal class InputHandler
     {
         public static List<GlfwInputContext> Contexts { get; }
-        
+
         static InputHandler()
         {
             Contexts = new List<GlfwInputContext>();
-           Util.Glfw.SetJoystickCallback(JoystickCallback);
+            Util.Glfw.SetJoystickCallback(JoystickCallback);
         }
 
         public static unsafe void RegisterContext(GlfwInputContext ctx)
@@ -30,7 +31,7 @@ namespace Silk.NET.Input.Desktop
             {
                 return;
             }
-            
+
             Contexts.Add(ctx);
 
             // register callbacks
@@ -39,11 +40,24 @@ namespace Silk.NET.Input.Desktop
             Util.Glfw.SetMouseButtonCallback(handle, MouseCallback);
             Util.Glfw.SetScrollCallback(handle, ScrollCallback);
             Util.Glfw.SetCursorPosCallback(handle, CursorCallback);
+            Util.Glfw.SetCharCallback(handle, CharCallback);
             ctx._window.Update += ctx.WindowUpdate;
+        }
+
+        private static unsafe void CharCallback(WindowHandle* window, uint codepoint)
+        {
+            // multiple contexts for one window should be allowed, but frowned upon
+            var allContexts = Contexts.Where(z => z._window.Handle == (IntPtr) window);
+
+            foreach (var context in allContexts)
+            {
+                ((GlfwKeyboard) context._keyboard).RaiseCharEvent(Convert.ToChar(codepoint));
+            }
         }
 
         private static unsafe void CursorCallback(WindowHandle* window, double x, double y)
         {
+            // multiple contexts for one window should be allowed, but frowned upon
             var allContexts = Contexts.Where(z => z._window.Handle == (IntPtr) window);
 
             foreach (var context in allContexts)
@@ -54,6 +68,7 @@ namespace Silk.NET.Input.Desktop
 
         private static unsafe void ScrollCallback(WindowHandle* window, double offsetx, double offsety)
         {
+            // multiple contexts for one window should be allowed, but frowned upon
             var allContexts = Contexts.Where(x => x._window.Handle == (IntPtr) window);
 
             foreach (var context in allContexts)
@@ -67,8 +82,10 @@ namespace Silk.NET.Input.Desktop
             Contexts.ForEach(x => x.RaiseConnectionChange(joystick, state));
         }
 
-        private static unsafe void MouseCallback(WindowHandle* window, MouseButton button, InputAction action, KeyModifiers mods)
+        private static unsafe void MouseCallback
+            (WindowHandle* window, MouseButton button, InputAction action, KeyModifiers mods)
         {
+            // multiple contexts for one window should be allowed, but frowned upon
             var allContexts = Contexts.Where(x => x._window.Handle == (IntPtr) window);
 
             foreach (var context in allContexts)
@@ -84,8 +101,10 @@ namespace Silk.NET.Input.Desktop
             }
         }
 
-        private static unsafe void KeyCallback(WindowHandle* window, Keys key, int scancode, InputAction action, KeyModifiers mods)
+        private static unsafe void KeyCallback
+            (WindowHandle* window, Keys key, int scancode, InputAction action, KeyModifiers mods)
         {
+            // multiple contexts for one window should be allowed, but frowned upon
             var allContexts = Contexts.Where(x => x._window.Handle == (IntPtr) window);
 
             foreach (var context in allContexts)

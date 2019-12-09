@@ -1,5 +1,5 @@
 # Silk.NET
-[![NuGet Version](https://img.shields.io/nuget/v/Silk.NET.OpenGL)](https://nuget.org/packages?q=Silk.NET) [![Preview Feed](https://img.shields.io/badge/nuget-experimental%20feed-yellow)](https://dev.azure.com/UltzLimited/Silk.NET/_packaging?_a=feed&feed=Experimental) [![Build Status](https://dev.azure.com/UltzLimited/Silk.NET/_apis/build/status/Ultz.Silk.NET?branchName=master)](https://dev.azure.com/UltzLimited/Silk.NET/_build/latest?definitionId=2&branchName=master)
+[![NuGet Version](https://img.shields.io/nuget/v/Silk.NET)](https://nuget.org/packages/Silk.NET) [![Preview Feed](https://img.shields.io/badge/nuget-experimental%20feed-yellow)](https://dev.azure.com/UltzLimited/Silk.NET/_packaging?_a=feed&feed=Experimental) [![Build Status](https://dev.azure.com/UltzLimited/Silk.NET/_apis/build/status/Ultz.Silk.NET?branchName=master)](https://dev.azure.com/UltzLimited/Silk.NET/_build/latest?definitionId=2&branchName=master)
 
 Silk.NET is a high-speed, advanced library, providing bindings to popular low-level APIs such as OpenGL and OpenAL. Use Silk.NET to add cross-platform 3D graphics, audio, compute and haptics to your C# application.
 
@@ -16,10 +16,6 @@ We currently have 3 maintainers:
 - [Dylan P.](https://github.com/Perksey) from [Ultz](https://github.com/Ultz)
 - [Aaron P.](https://github.com/AzyIsCool) from [Ultz](https://github.com/Ultz)
 - [Frederik A.](https://github.com/frederikja163) from the open-source community
-
-As well as 2 community members who we consult with to influence Silk.NET's design:
-- [devvoid](https://github.com/devvoid), a Silk.NET contributor who basically wrote half the library
-- [BlackCentipede](https://github.com/BlackCentipede), a low-level genius/madman
 
 # Building from source
 

@@ -14,7 +14,7 @@ namespace Silk.NET.BuildTools.Bind.Overloading
 {
     public class StringReturnOverloader : IFunctionOverloader
     {
-        public IEnumerable<Overload> CreateOverloads(Function function)
+        public IEnumerable<ImplementedFunction> CreateOverloads(Function function)
         {
             if (function.ReturnType.ToString() == "char*" || function.ReturnType.ToString() == "byte*")
             {
@@ -22,8 +22,8 @@ namespace Silk.NET.BuildTools.Bind.Overloading
                 sb.Append($"return Marshal.PtrToStringAnsi((IntPtr) {function.Name}(");
                 sb.Append(string.Join(", ", function.Parameters.Select(Convert)));
                 sb.AppendLine("));");
-                var sig = new FunctionSignatureBuilder(function).WithReturnType(new Type {Name = "string"}).WithName(function.Name + "Managed").Build();
-                yield return new Overload(sig, sb, true);
+                var sig = new FunctionSignatureBuilder(function).WithReturnType(new Type {Name = "string"}).WithName(function.Name + "S").Build();
+                yield return new ImplementedFunction(sig, sb, true);
             }
         }
 

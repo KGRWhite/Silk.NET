@@ -12,14 +12,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Silk.NET.GLFW;
 using Silk.NET.Windowing.Common;
-using Ultz.Dispatcher;
 
 namespace Silk.NET.Windowing.Desktop
 {
     /// <summary>
     /// A Silk.NET window, using GLFW as a backend.
     /// </summary>
-    public class GlfwWindow : IWindow
+    public class GlfwWindow : IVulkanWindow
     {
         // The number of frames that the window has been running slowly for.
         private int _isRunningSlowlyTries;
@@ -34,7 +33,7 @@ namespace Silk.NET.Windowing.Desktop
         private WindowState _windowState;
 
         // Glfw stuff
-        private Glfw _glfw = GlfwProvider.GLFW.Value;
+        private readonly Glfw _glfw = GlfwProvider.GLFW.Value;
         private unsafe WindowHandle* _windowPtr;
 
         // Callbacks
@@ -64,7 +63,7 @@ namespace Silk.NET.Windowing.Desktop
         private bool _running;
 
         /// <summary>
-        /// Create and open a new GlfwWindow.
+        /// Create a new GlfwWindow.
         /// </summary>
         /// <param name="options">The options to use for this window.</param>
         public GlfwWindow(WindowOptions options)
@@ -88,6 +87,7 @@ namespace Silk.NET.Windowing.Desktop
         /// <inheritdoc />
         public int RunningSlowTolerance { get; set; }
 
+        /// <inheritdoc />
         public unsafe bool IsClosing => _glfw.WindowShouldClose(_windowPtr);
 
         /// <inheritdoc />
@@ -132,6 +132,12 @@ namespace Silk.NET.Windowing.Desktop
         /// <inheritdoc />
         public bool UseSingleThreadedWindow { get; }
 
+        /// <summary>
+        /// Whether or not this window should swap buffers automatically.
+        /// </summary>
+        /// <remarks>
+        /// If this is false, you'll have to call <see cref="GlfwWindow.SwapBuffers"/> manually.
+        /// </remarks>
         public bool ShouldSwapAutomatically { get; }
 
         /// <inheritdoc />
@@ -205,7 +211,7 @@ namespace Silk.NET.Windowing.Desktop
         }
 
         /// <inheritdoc />
-        public GraphicsAPI API { get; }
+        public GraphicsAPI API => _initialOptions.API;
 
         /// <inheritdoc />
         public string Title
@@ -355,15 +361,22 @@ namespace Silk.NET.Windowing.Desktop
             return task.Result;
         }
 
-        private bool _contextMoved = false;
+        private bool _contextMoved;
 
+        /// <inheritdoc />
         public unsafe void MakeCurrent()
         {
             _contextMoved = true;
             _glfw.MakeContextCurrent(_windowPtr);
         }
-
-        public void MakeCurrentInternal()
+        
+        /// <summary>
+        /// Make context current on this thread if it was moved to another one.
+        /// </summary>
+        /// <remarks>
+        /// Awaiting rewrite.
+        /// </remarks>
+        private void MakeCurrentInternal()
         {
             if (_contextMoved)
             {
@@ -381,8 +394,14 @@ namespace Silk.NET.Windowing.Desktop
             }
         }
 
+        /// <inheritdoc />
         public unsafe void Open()
         {
+            if (_windowPtr != default)
+            {
+                return;
+            }
+            
             // Set window border.
             switch (_initialOptions.WindowBorder)
             {
@@ -401,7 +420,7 @@ namespace Silk.NET.Windowing.Desktop
                     _glfw.WindowHint(WindowHintBool.Resizable, false);
                     break;
             }
-
+            
             // Set window API.
             switch (_initialOptions.API.API)
             {
@@ -416,6 +435,8 @@ namespace Silk.NET.Windowing.Desktop
                     _glfw.WindowHint(WindowHintClientApi.ClientApi, ClientApi.OpenGLES);
                     break;
             }
+            
+            _glfw.WindowHint(WindowHintBool.Visible, _initialOptions.IsVisible);
 
             // Set API version.
             _glfw.WindowHint(WindowHintInt.ContextVersionMajor, _initialOptions.API.Version.MajorVersion);
@@ -445,16 +466,22 @@ namespace Silk.NET.Windowing.Desktop
             _invokeQueue = new ConcurrentQueue<Task>();
             _mainThread = Thread.CurrentThread.ManagedThreadId;
 
-            _glfw.MakeContextCurrent(_windowPtr);
+            if (API.API == ContextAPI.OpenGL || API.API == ContextAPI.OpenGLES)
+            {
+                _glfw.MakeContextCurrent(_windowPtr);
+                VSync = _initialOptions.VSync;
+            }
+
             WindowState = _initialOptions.WindowState;
             Position = _initialOptions.Position;
-            VSync = _initialOptions.VSync;
-            if (_glfw.GetCurrentContext() != _windowPtr)
+
+            InitializeCallbacks();
+
+            if ((API.API == ContextAPI.OpenGL || API.API == ContextAPI.OpenGLES) &&
+                _glfw.GetCurrentContext() != _windowPtr)
             {
                 _glfw.MakeContextCurrent(_windowPtr);
             }
-
-            InitializeCallbacks();
 
             // Run OnLoad.
             Load?.Invoke();
@@ -469,12 +496,14 @@ namespace Silk.NET.Windowing.Desktop
             _updateStopwatch.Start();
         }
 
+        /// <inheritdoc />
         public void DoRender()
         {
             MakeCurrentInternal();
             RaiseRenderFrame();
         }
 
+        /// <inheritdoc />
         public void DoUpdate()
         {
             if (UseSingleThreadedWindow)
@@ -503,6 +532,7 @@ namespace Silk.NET.Windowing.Desktop
             _glfw.PollEvents();
         }
 
+        /// <inheritdoc />
         public unsafe void Reset()
         {
             _updateStopwatch.Stop();
@@ -734,6 +764,29 @@ namespace Silk.NET.Windowing.Desktop
             _glfw.SetWindowIconifyCallback(_windowPtr, _onMinimized);
             _glfw.SetWindowMaximizeCallback(_windowPtr, _onMaximized);
             _glfw.SetDropCallback(_windowPtr, _onFileDrop);
+        }
+
+        /// <inheritdoc />
+        public bool IsVulkanSupported => _glfw.VulkanSupported();
+        
+        /// <inheritdoc />
+        public unsafe VkHandle CreateSurface<T>(VkHandle instance, T* allocator)
+            where T : unmanaged
+        {
+            var surface = stackalloc VkHandle[1];
+            int ec;
+            if ((ec = _glfw.CreateWindowSurface(instance, _windowPtr, allocator, surface)) != 0)
+            {
+                throw new GlfwException("Failed to create surface, error code " + ec);
+            }
+
+            return surface[0];
+        }
+        
+        /// <inheritdoc />
+        public unsafe char** GetRequiredExtensions(out uint count)
+        {
+            return (char**) _glfw.GetRequiredInstanceExtensions(out count);
         }
     }
 }
