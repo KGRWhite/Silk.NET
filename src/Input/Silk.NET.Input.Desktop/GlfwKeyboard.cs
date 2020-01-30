@@ -25,8 +25,8 @@ namespace Silk.NET.Input.Desktop
         public unsafe bool IsKeyPressed
             (Key key) => GlfwProvider.GLFW.Value.GetKey(_handle, ConvertKey(key)) == (int) InputAction.Press;
 
-        public event Action<IKeyboard, Key, int> KeyDown;
-        public event Action<IKeyboard, Key, int> KeyUp;
+        public event Action<IKeyboard, Key, int, int> KeyDown;
+        public event Action<IKeyboard, Key, int, int> KeyUp;
         public event Action<IKeyboard, char> KeyChar;
 
 
@@ -41,7 +41,7 @@ namespace Silk.NET.Input.Desktop
                     InputAction.Release => KeyUp,
                     InputAction.Repeat => null,
                     _ => null
-                })?.Invoke(this, ConvertKey(key), code);
+                })?.Invoke(this, ConvertKey(key), code, (int)mods);
         }
 
         public void Unsubscribe(GlfwEvents events)
