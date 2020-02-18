@@ -19,7 +19,6 @@ namespace Silk.NET.BuildTools.Overloading
         {
             // Early Overloaders in order of priority
             new StringOverloader(),
-            new GroupOverloader(),
             
             // Prompt Overloaders
             new SpanAndRefOverloader(),
