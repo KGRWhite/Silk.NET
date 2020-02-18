@@ -5,6 +5,7 @@
 
 using System;
 using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using MoreLinq.Extensions;
 using Silk.NET.BuildTools.Common;
