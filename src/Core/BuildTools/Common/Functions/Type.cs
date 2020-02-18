@@ -28,15 +28,32 @@ namespace Silk.NET.BuildTools.Common.Functions
         [JsonIgnore]
         public bool IsArray => ArrayDimensions != 0;
 
+        [JsonProperty("IndirectionLevels")]
+        private int _indirectionLevels;
+        
         /// <summary>
         /// Gets or sets the amount of indirection levels (asterisks as represented in C#).
         /// </summary>
-        public int IndirectionLevels { get; set; }
+        [JsonIgnore]
+        public int IndirectionLevels
+        {
+            get => _indirectionLevels;
+            set
+            {
+                if (value < 0)
+                {
+                    Debug.WriteLine($"Negative indirection levels assigned at:\n{Environment.StackTrace}");
+                }
+
+                _indirectionLevels = value;
+            }
+            
+        }
 
         /// <summary>
         /// Gets or sets the dimensions of the array (i.e. the amount of [] as represented in C#).
         /// </summary>
-        public int ArrayDimensions { get; set; }
+        public int ArrayDimensions { get; set; } = 0;
 
         /// <summary>
         /// Gets or sets the name of this type.
@@ -52,6 +69,11 @@ namespace Silk.NET.BuildTools.Common.Functions
         /// Gets or sets the original name of this type, before mapping.
         /// </summary>
         public string OriginalName { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the original group of this type.
+        /// </summary>
+        public string OriginalGroup { get; set; }
 
         /// <summary>
         /// Gets or sets the generic types arguments for this type.
@@ -97,6 +119,21 @@ namespace Silk.NET.BuildTools.Common.Functions
                        StringComparison.OrdinalIgnoreCase
                    )
                    && IsPointer;
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether this signature represents a void pointer.
+        /// </summary>
+        /// <returns>A value indicating whether this signature represents a void pointer.</returns>
+        public bool IsSingleVoidPointer()
+        {
+            return ToString() == "void*";
+            //return Name.Equals
+            //       (
+            //           typeof(void).Name.ToLowerInvariant(),
+            //           StringComparison.OrdinalIgnoreCase
+            //       )
+            //       && IsPointer;
         }
 
         /// <summary>

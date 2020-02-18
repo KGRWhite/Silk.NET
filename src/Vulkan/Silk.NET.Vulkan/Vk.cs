@@ -2,21 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using AdvancedDLSupport.AOT;
-using AdvancedDLSupport.Loaders;
 using Silk.NET.Core.Loader;
 using Silk.NET.Core.Native;
+using LibraryLoader = Ultz.SuperInvoke.Loader.LibraryLoader;
 
 namespace Silk.NET.Vulkan
 {
     public partial class Vk
     {
-        private ISymbolLoader _extLoader;
+        private VkLoader _extLoader;
         public Instance? CurrentInstance { get; set; }
         public Device? CurrentDevice { get; set; }
         public static Vk GetApi()
         {
-            var sym = new VkLoader(PlatformLoaderBase.PlatformLoader);
+            var sym = new VkLoader(LibraryLoader.GetPlatformDefaultLoader());
             var ret = LibraryLoader<Vk>.Load(new VulkanLibraryNameContainer(), sym);
             sym.Vulkan = ret;
             return ret;
@@ -25,8 +24,7 @@ namespace Silk.NET.Vulkan
         public bool TryGetExtension<T>(out T ext)
             where T:NativeExtension<Vk>
         {
-            ext = LibraryLoader<Vk>.Load<T>
-                (this, SearchPaths, _extLoader ??= new VkLoader(this, PlatformLoaderBase.PlatformLoader));
+            ext = LibraryLoader<Vk>.Load<T>(this);
             return ext != null;
         }
 
@@ -57,7 +55,7 @@ namespace Silk.NET.Vulkan
             if (CurrentInstance.HasValue)
             {
                 var physicalDeviceCount = 0u;
-                EnumeratePhysicalDevices(CurrentInstance.Value, &physicalDeviceCount, null);
+                EnumeratePhysicalDevices(CurrentInstance.Value, &physicalDeviceCount, (PhysicalDevice*)null);
                 var physicalDevices = stackalloc PhysicalDevice[(int) physicalDeviceCount];
                 EnumeratePhysicalDevices(CurrentInstance.Value, &physicalDeviceCount, physicalDevices);
 

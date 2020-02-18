@@ -13,6 +13,7 @@ using System.Linq;
 using System.Xml.Linq;
 using JetBrains.Annotations;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using MoreLinq.Extensions;
 using Silk.NET.BuildTools.Common;
 using Silk.NET.BuildTools.Common.Enums;
@@ -395,7 +396,18 @@ namespace Silk.NET.BuildTools.Converters.Readers
                 Name = Utilities.CSharpKeywords.Contains(paramName) ? $"@{paramName}" : paramName,
                 Flow = paramFlow,
                 Type = paramType,
-                Count = countSignature
+                Count = countSignature,
+                Attributes = paramType.Name.StartsWith
+                    ("GLDEBUGPROC")
+                    ? new List<Attribute>
+                    {
+                        new Attribute
+                        {
+                            Arguments = new List<string> {"Ultz.SuperInvoke.InteropServices.PinMode.UntilNextCall"},
+                            Name = "Ultz.SuperInvoke.InteropServices.PinObjectAttribute"
+                        }
+                    }
+                    : new List<Attribute>()
             };
         }
 
@@ -512,7 +524,7 @@ namespace Silk.NET.BuildTools.Converters.Readers
                 .ToDictionary
                 (
                     x => x.Attribute("name")?.Value,
-                    x => FormatToken(x.Attribute("value")?.Value)
+                    x => (FormatToken(x.Attribute("value")?.Value), x.Attribute("group")?.Value.Split(','))
                 );
             var apis = doc.Element("registry").Elements("feature").Concat(doc.Element("registry").Elements("extensions").Elements("extension"));
             var removals = doc.Element("registry").Elements("feature")
@@ -552,7 +564,7 @@ namespace Silk.NET.BuildTools.Converters.Readers
                                 Doc = string.Empty,
                                 Name = Naming.Translate(TrimName(token.Value, opts), opts.Prefix),
                                 NativeName = token.Value,
-                                Value = allEnums[token.Value]
+                                Value = allEnums[token.Value].Item1
                             }
                         )
                         .ToList(); 
@@ -589,6 +601,99 @@ namespace Silk.NET.BuildTools.Converters.Readers
                     }
                 }
             }
+
+            var groups = new Dictionary<string, List<Token>>();
+            foreach (var @enum in allEnums)
+            {
+                if (@enum.Value.Item2 is null)
+                {
+                    continue;
+                }
+
+                foreach (var group in @enum.Value.Item2)
+                {
+                    if (groups.ContainsKey(group))
+                    {
+                        groups[group].Add(new Token
+                        {
+                            Attributes = removals.Contains(@enum.Key)
+                                ? new List<Attribute>
+                                {
+                                    new Attribute
+                                    {
+                                        Name = "System.Obsolete"
+                                    }
+                                }
+                                : new List<Attribute>(),
+                            Doc = string.Empty,
+                            Name = Naming.Translate(TrimName(@enum.Key, opts), opts.Prefix),
+                            NativeName = @enum.Key,
+                            Value = @enum.Value.Item1
+                        });
+                    }
+                    else
+                    {
+                        groups.Add
+                        (
+                            group, new List<Token>
+                            {
+                                new Token
+                                {
+                                    Attributes = removals.Contains(@enum.Key)
+                                        ? new List<Attribute>
+                                        {
+                                            new Attribute
+                                            {
+                                                Name = "System.Obsolete"
+                                            }
+                                        }
+                                        : new List<Attribute>(),
+                                    Doc = string.Empty,
+                                    Name = Naming.Translate(TrimName(@enum.Key, opts), opts.Prefix),
+                                    NativeName = @enum.Key,
+                                    Value = @enum.Value.Item1
+                                }
+                            }
+                        );
+                    }
+                }
+            }
+
+            foreach (var group in groups)
+            {
+                foreach (var (apiName, apiVersion) in doc.Element("registry")
+                    .Elements("feature")
+                    .Select(x => (x.Attribute("api").Value, x.Attribute("number").Value))
+                    .Distinct())
+                {
+                    var ret = new Enum
+                    {
+                        Name = group.Key,
+                        NativeName = group.Key,
+                        Attributes = new List<Attribute>(),
+                        ExtensionName = "Core (Grouped)",
+                        ProfileName = apiName,
+                        ProfileVersion = Version.Parse(apiVersion),
+                        Tokens = group.Value
+                    };
+
+                    yield return ret;
+
+                    if (apiName == "gl")
+                    {
+                        yield return new Enum
+                        {
+                            Name = ret.Name,
+                            NativeName = ret.NativeName,
+                            Attributes = new List<Attribute>(),
+                            ExtensionName = "Core (Grouped)",
+                            ProfileName = "glcore",
+                            ProfileVersion = Version.Parse(apiVersion),
+                            Tokens = group.Value.Where(x => x.Attributes.Count == 0).ToList()
+                        };
+                    }
+                }
+            }
         }
 
         public IEnumerable<Constant> ReadConstants(object obj, ProfileConverterOptions opts)
@@ -601,6 +706,12 @@ namespace Silk.NET.BuildTools.Converters.Readers
             if (token == null)
             {
                 return null;
+            }
+
+            if (token.StartsWith("EGL_CAST("))
+            {
+                // ReSharper disable once TailRecursiveCall
+                return FormatToken(token.Remove(0, 8).TrimStart('(').TrimEnd(')').Split(',')[1]);
             }
 
             var tokenHex = token.StartsWith("0x") ? token.Substring(2) : token;

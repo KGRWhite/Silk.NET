@@ -3,26 +3,24 @@
 // You may modify and distribute Silk.NET under the terms
 // of the MIT license. See the LICENSE file for details.
 
-using AdvancedDLSupport;
-using AdvancedDLSupport.Loaders;
+using System;
 using Silk.NET.Core.Loader;
+using Ultz.SuperInvoke;
+using Ultz.SuperInvoke.Loader;
 
 namespace Silk.NET.Core.Native
 {
     /// <inheritdoc />
-    public abstract class NativeAPI : NativeLibraryBase
+    public abstract class NativeAPI : NativeApiContainer
     {
         /// <inheritdoc />
-        protected NativeAPI
-        (
-            string path,
-            ImplementationOptions options,
-            ILibraryLoader libLoader = null,
-            ISymbolLoader symLoader = null
-        )
-        : base(path, options, libLoader, symLoader)
+        protected NativeAPI(ref NativeApiContext ctx)
+        : base(ref ctx)
         {
+            Library = ctx.Library;
         }
+        
+        public UnmanagedLibrary Library { get; }
 
         public abstract SearchPathContainer SearchPaths { get; }
 

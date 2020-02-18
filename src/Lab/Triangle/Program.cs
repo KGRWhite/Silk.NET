@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define MINIMAL
+
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
@@ -19,17 +21,26 @@ namespace Triangle
         {
             -0.5f, -0.5f, 0.0f, // Bottom-left vertex
             0.5f, -0.5f, 0.0f, // Bottom-right vertex
-            0.0f,  0.5f, 0.0f  // Top vertex
+            0.0f, 0.5f, 0.0f // Top vertex
         };
+
         private static uint _vertexBufferObject;
         private static uint _vertexArrayObject;
         private static GL _gl;
+#if MINIMAL
+        private static IView _window;
+#else
         private static IWindow _window;
+#endif
         private static Shader _shader;
 
         public static void Main(string[] args)
         {
+#if MINIMAL
+            _window = Window.GetView(ViewOptions.Default);
+#else
             _window = Window.Create(WindowOptions.Default);
+#endif
             _window.Load += Load;
             _window.Render += RenderFrame;
             _window.Update += UpdateFrame;
@@ -41,24 +52,29 @@ namespace Triangle
         private static unsafe void Load()
         {
             _gl = GL.GetApi();
+            _gl.Enable(GLEnum.DebugOutput);
+            _gl.Enable(GLEnum.DebugOutputSynchronous);
+            _gl.DebugMessageCallback(OnDebug, null);
             _gl.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             _vertexBufferObject = _gl.GenBuffer();
             _gl.BindBuffer(GLEnum.ArrayBuffer, _vertexBufferObject);
             fixed (float* vertices = _vertices)
             {
-                _gl.BufferData(GLEnum.ArrayBuffer, (uint)_vertices.Length * sizeof(float), vertices, GLEnum.StaticDraw);
+                _gl.BufferData
+                    (GLEnum.ArrayBuffer, (uint) _vertices.Length * sizeof(float), vertices, GLEnum.StaticDraw);
             }
 
             _shader = new Shader("Triangle.shader.vert", "Triangle.shader.frag", _gl, typeof(Program));
             _shader.Use();
             _vertexArrayObject = _gl.GenVertexArray();
             _gl.BindVertexArray(_vertexArrayObject);
-            _gl.VertexAttribPointer(0, 3, GLEnum.Float, false, 3 * sizeof(float), 0);
+            _gl.VertexAttribPointer(0, 3, GLEnum.Float, false, 3 * sizeof(float), null);
             _gl.EnableVertexAttribArray(0);
             _gl.BindBuffer(GLEnum.ArrayBuffer, _vertexBufferObject);
         }
 
-        private static void OnDebug(GLEnum source, GLEnum type, int id, GLEnum severity, int length, IntPtr message, IntPtr userparam)
+        private static void OnDebug
+            (GLEnum source, GLEnum type, int id, GLEnum severity, int length, IntPtr message, IntPtr userparam)
         {
             Console.WriteLine
             (
@@ -83,7 +99,7 @@ namespace Triangle
         {
             _gl.Viewport(size);
         }
-        
+
         private static void End()
         {
             _gl.BindBuffer(GLEnum.ArrayBuffer, 0);
